@@ -188,8 +188,57 @@ int main() {
     int ic;
     int jc;
     /*
-    pb
+    Terminaux
     */
+    int K = 1 + nd*nd*lambda;
+    for (int i = 0; i < nx; i++)
+    {
+        // for each p
+        for (int j = 0; j < ny; j++)
+        {
+            x = n + zoom*i;
+            y = n + zoom*j;
+            // t_links for source s and sink t
+            int s_t_link = indexto1d(i, j, dmin, nx, ny, dmax, dmin);
+
+            // int t_t_link = indexto1d(nx-1, ny-1, dmax, nx, ny, dmin);
+            int t_t_link = indexto1d(i, j, dmax-1, nx, ny, dmax, dmin);
+
+            // compute w1p and wkp /!\ add K !!!
+            float w1p = wcc*rho(zncc(I1,I1M,I2,I2M,x,y,x+dmin,y,n)) + K;
+            float wkp = wcc*rho(zncc(I1,I1M,I2,I2M,x,y,x+dmax,y,n)) + K;
+
+            // t links edges
+            G.add_tweights(s_t_link,w1p,0);
+            G.add_tweights(t_t_link,0,wkp);
+        }
+    }
+    /*
+    Regularization
+    */
+
+    for (int i = 0; i < nx; i++)
+    {
+        // for each p
+        for (int j = 0; j < ny; j++)
+        {
+            for (int d = dmin; d < dmax-1; d++)
+            {
+                // p for d and d+1
+                int index1 = indexto1d(i, j, d, nx, ny, dmax, dmin);
+                // right
+                if( i+1<nx ){
+                    int index_right = indexto1d(i+1, j, d, nx, ny, dmax, dmin);
+                    G.add_edge(index1,index_right,lambda,lambda);
+                }
+                // bottom
+                if( j+1<ny ){
+                    int index_bottom = indexto1d(i, j+1, d, nx, ny, dmax, dmin);
+                    G.add_edge(index1,index_bottom,lambda,lambda);
+                }
+            }
+        }
+    }
     for (int i = 0; i < nx; i++)
     {
         // for each p
@@ -201,19 +250,6 @@ int main() {
 
             x = n + zoom*i;
             y = n + zoom*j;
-            // t_links for source s and sink t
-            int s_t_link = indexto1d(i, j, dmin, nx, ny, dmax, dmin);
-
-            // int t_t_link = indexto1d(nx-1, ny-1, dmax, nx, ny, dmin);
-            int t_t_link = indexto1d(i, j, dmax-1, nx, ny, dmax, dmin);
-
-            // compute w1p and wkp /!\ add K !!!
-            float w1p = rho(zncc(I1,I1M,I2,I2M,x,y,x+dmin,y,n));
-            float wkp = rho(zncc(I1,I1M,I2,I2M,x,y,x+dmax,y,n));
-
-            // t links edges
-            G.add_tweights(s_t_link,w1p,0);
-            G.add_tweights(t_t_link,0,wkp);
 
             // compute for each d in p
             // d in [dmin , dmax - 2]
@@ -224,21 +260,9 @@ int main() {
                 int index1 = indexto1d(i, j, d, nx, ny, dmax, dmin);
 
                 int index2 = indexto1d(i, j, d+1, nx, ny, dmax, dmin);
-                index1c = index1;
-                index2c = index2;
-                // right
-                if( i+1<nx ){
-                    int index_right = indexto1d(i+1, j, d, nx, ny, dmax, dmin);
-                    G.add_edge(index1,index_right,lambda,lambda);
-                }
-                // bottom
-                if( j+1<ny ){
-                    int index_bottom = indexto1d(i, j+1, d, nx, ny, dmax, dmin);
-                    G.add_edge(index1,index_bottom,lambda,lambda);
-                }
 
                 // we compute wip from dmin+1 to dmax-1
-                float wip = wcc*rho(zncc(I1,I1M,I2,I2M,x,y,x+d+1,y,n)) + (1+(nd)*(nd)*lambda);
+                float wip = wcc*rho(zncc(I1,I1M,I2,I2M,x,y,x+d+1,y,n)) + K;
                 
                 G.add_edge(index1,index2,wip,0);                
             }
@@ -265,21 +289,6 @@ int main() {
             // we check trival solutions
             int index_min = indexto1d(i, j, dmin, nx, ny, dmax, dmin);
             int index_max = indexto1d(i, j, dmax-1, nx, ny, dmax, dmin);
-            
-            // cout << endl;
-            // for (size_t dd = 10; dd < dmax; dd++)
-            // {
-            //     int test = indexto1d(i, j, dd, nx, ny, dmax, dmin);
-            //     cout << test % 45 << " " << G.what_segment(test) << " <>>" << endl;
-            // if (G.what_segment(test) == Graph<int,int,int>::SOURCE)
-            // {
-            //     cout << "SOURCE"<<endl;
-            // }
-            // else if (G.what_segment(test) == Graph<int,int,int>::SINK)
-            // {
-            //     cout << "SINK !!"<<endl;
-            // }
-            // }
 
             int d = dmax-1;
             do{
