@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/x1/M2/VISION/gcdispar/exampleGC.cpp
+iostream
+-
+maxflow/graph.h
+/home/x1/M2/VISION/gcdispar/maxflow/graph.h
+
+/home/x1/M2/VISION/gcdispar/maxflow/block.h
+block.h
+/home/x1/M2/VISION/gcdispar/maxflow/block.h
+stdlib.h
+-
+
+/home/x1/M2/VISION/gcdispar/maxflow/graph.h
+string.h
+-
+block.h
+/home/x1/M2/VISION/gcdispar/maxflow/block.h
+assert.h
+-
+

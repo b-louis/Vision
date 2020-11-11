@@ -1,0 +1,22 @@
+[
+{
+  "directory": "/home/x1/M2/VISION/gcdispar/build",
+  "command": "/bin/x86_64-linux-gnu-g++-9  -DQT_CORE_LIB -DQT_GUI_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -I/usr/share/Imagine++/include -isystem /home/x1/anaconda3/include/qt -isystem /home/x1/anaconda3/include/qt/QtCore -isystem /home/x1/anaconda3/./mkspecs/linux-g++ -isystem /home/x1/anaconda3/include/qt/QtWidgets -isystem /home/x1/anaconda3/include/qt/QtGui -isystem /home/x1/anaconda3/include/qt/QtOpenGL  -g   -DSRCDIR=\"/home/x1/M2/VISION/gcdispar\" -fPIC -o CMakeFiles/stereoGC.dir/stereoGC.cpp.o -c /home/x1/M2/VISION/gcdispar/stereoGC.cpp",
+  "file": "/home/x1/M2/VISION/gcdispar/stereoGC.cpp"
+},
+{
+  "directory": "/home/x1/M2/VISION/gcdispar/build",
+  "command": "/bin/x86_64-linux-gnu-g++-9  -DQT_CORE_LIB -DQT_GUI_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -I/usr/share/Imagine++/include -isystem /home/x1/anaconda3/include/qt -isystem /home/x1/anaconda3/include/qt/QtCore -isystem /home/x1/anaconda3/./mkspecs/linux-g++ -isystem /home/x1/anaconda3/include/qt/QtWidgets -isystem /home/x1/anaconda3/include/qt/QtGui -isystem /home/x1/anaconda3/include/qt/QtOpenGL  -g   -DSRCDIR=\"/home/x1/M2/VISION/gcdispar\" -fPIC -o CMakeFiles/stereoGC.dir/maxflow/graph.cpp.o -c /home/x1/M2/VISION/gcdispar/maxflow/graph.cpp",
+  "file": "/home/x1/M2/VISION/gcdispar/maxflow/graph.cpp"
+},
+{
+  "directory": "/home/x1/M2/VISION/gcdispar/build",
+  "command": "/bin/x86_64-linux-gnu-g++-9   -I/usr/share/Imagine++/include -I/home/x1/anaconda3/include/qt -I/home/x1/anaconda3/include/qt/QtCore -I/home/x1/anaconda3/./mkspecs/linux-g++ -I/home/x1/anaconda3/include/qt/QtWidgets -I/home/x1/anaconda3/include/qt/QtGui -I/home/x1/anaconda3/include/qt/QtOpenGL  -g   -o CMakeFiles/exampleGC.dir/exampleGC.cpp.o -c /home/x1/M2/VISION/gcdispar/exampleGC.cpp",
+  "file": "/home/x1/M2/VISION/gcdispar/exampleGC.cpp"
+},
+{
+  "directory": "/home/x1/M2/VISION/gcdispar/build",
+  "command": "/bin/x86_64-linux-gnu-g++-9   -I/usr/share/Imagine++/include -I/home/x1/anaconda3/include/qt -I/home/x1/anaconda3/include/qt/QtCore -I/home/x1/anaconda3/./mkspecs/linux-g++ -I/home/x1/anaconda3/include/qt/QtWidgets -I/home/x1/anaconda3/include/qt/QtGui -I/home/x1/anaconda3/include/qt/QtOpenGL  -g   -o CMakeFiles/exampleGC.dir/maxflow/graph.cpp.o -c /home/x1/M2/VISION/gcdispar/maxflow/graph.cpp",
+  "file": "/home/x1/M2/VISION/gcdispar/maxflow/graph.cpp"
+}
+]
