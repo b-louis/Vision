@@ -239,6 +239,10 @@ int main() {
             }
         }
     }
+    /*
+    Each layer computation
+    */
+
     for (int i = 0; i < nx; i++)
     {
         // for each p
