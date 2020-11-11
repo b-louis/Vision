@@ -74,12 +74,12 @@ double zncc(const doubleImage& I1,  // Image 1
 }
 // Compute rho of c
 double rho(double zncc){
-    if(zncc>0 && zncc <=1){
-        return sqrt(1-zncc);
+    if(zncc<0){
+        return 1;
     }
     else
     {
-        return 1;
+        return sqrt(zncc);
     }
     
 }
@@ -98,7 +98,7 @@ int indexto1d(int x, // x coordonates
 
     // return x + y*rangey + (rangex*rangey)*(d-minD);
     // return x + rangey*y + rangey*rangex*(d-minD);
-    return x*rangey*(maxD-minD) + y*(maxD-minD) + (d-minD);
+    return x*rangey*(maxD-minD-1) + y*(maxD-minD-1) + (d-minD);
 }
 // For 1 index returns a 3 dimensional index
 void indexto3d(int input ,int &x , int &y , int &d , int rangex , int rangey,int minD){
@@ -109,7 +109,6 @@ void indexto3d(int input ,int &x , int &y , int &d , int rangex , int rangey,int
     // put it back as we remove it in 3dindexto1d
     d = d + minD;
 }
-
 // Load two rectified images.
 // Compute the disparity of image 2 w.r.t. image 1.
 // Display disparity map.
@@ -131,7 +130,7 @@ int main() {
 
     cout << "Setting parameters... " << flush;
     // Generic parameters
-    const int zoom = 2;      // Zoom factor (to speedup computations)
+    const int zoom = 100;      // Zoom factor (to speedup computations)
     const int n = 3;         // Consider correlation patches of size (2n+1)*(2n+1)
     const float lambdaf = 0.1; // Weight of regularization (smoothing) term
     const int wcc = max(1+int(1/lambdaf),20); // Energy discretization precision [as we build a graph with 'int' weights]
@@ -157,6 +156,12 @@ int main() {
     doubleImage I1M = meanImage(I1,n), I2M = meanImage(I2,n);
     // Zoomed image dimension, disregarding borders (strips of width equal to patch half-size)
     const int nx = (w1 - 2*n) / zoom, ny = (h - 2*n) / zoom;
+    cout<< "w1 = " << w1 <<  endl;  
+    cout<< "w2 = " << w2 <<  endl;  
+    cout<< "h = " << h <<  endl;  
+    cout<< "w1 = " << w1 <<  endl;  
+    cout<< "ww = " << (w1 - 2*n) <<  endl;  
+    cout<< "zoo = " << zoom <<  endl;  
 
     const int nd = dmax-dmin; // Disparity range
     const int INF=1000000; // "Infinite" value for edge impossible to cut
@@ -179,17 +184,13 @@ int main() {
     cout<< "nx = " << nx <<  endl;  
     cout<< "ny = " << ny <<  endl;  
     cout<< "nd = " << nd <<  endl;  
-    cout<< "zoom = " << zoom <<  endl;  
     cout<< "nb node = " << nx*ny*(nd-1) <<  endl;  
-    cout<< "nb edges = " << 6*nx*ny*(nd-1) <<  endl;  
+    cout<< "nb edges = " << 7*7*nx*ny*(nd-1) <<  endl;  
     int index1c;
     int index2c;
     int dc;
     int ic;
     int jc;
-    /*
-    pb
-    */
     for (int i = 0; i < nx; i++)
     {
         // for each p
@@ -211,6 +212,14 @@ int main() {
             float w1p = rho(zncc(I1,I1M,I2,I2M,x,y,x+dmin,y,n));
             float wkp = rho(zncc(I1,I1M,I2,I2M,x,y,x+dmax,y,n));
 
+            // cout  <<" SOURCE s_t_link " << s_t_link << endl;
+            // cout  <<" SINK t_t_link " << t_t_link << endl;
+            wkp *= 10;
+            w1p *= 10;
+
+            // cout  <<" SOURCE " << w1p << endl;
+            // cout  <<" SINK " << wkp << endl;
+            
             // t links edges
             G.add_tweights(s_t_link,w1p,0);
             G.add_tweights(t_t_link,0,wkp);
@@ -219,28 +228,71 @@ int main() {
             // d in [dmin , dmax - 2]
             for (int d = dmin; d < dmax-1; d++)
             {
-                dc = d;
+                /*
+                create edge pi to pi+1
+                Compute Dp and weight assign edge
+
+                for each neigbour p q 
+                compute lambda
+                create edge
+                
+                */
+
                 // p for d and d+1
                 int index1 = indexto1d(i, j, d, nx, ny, dmax, dmin);
 
                 int index2 = indexto1d(i, j, d+1, nx, ny, dmax, dmin);
+                dc = d;
                 index1c = index1;
                 index2c = index2;
-                // right
-                if( i+1<nx ){
-                    int index_right = indexto1d(i+1, j, d, nx, ny, dmax, dmin);
-                    G.add_edge(index1,index_right,lambda,lambda);
-                }
-                // bottom
-                if( j+1<ny ){
-                    int index_bottom = indexto1d(i, j+1, d, nx, ny, dmax, dmin);
-                    G.add_edge(index1,index_bottom,lambda,lambda);
-                }
+                // edge for p with d and d+1
+                double lambda_pq = 0;
 
-                // we compute wip from dmin+1 to dmax-1
-                float wip = wcc*rho(zncc(I1,I1M,I2,I2M,x,y,x+d+1,y,n)) + (1+(nd)*(nd)*lambda);
+                for (int ix = -n; ix < n+1; ix++)
+                {
+                    /* 
+
+                    We compute the neigbour costs when 2 neighbours point have the same d then it's small 
+                    by d, it's the difference between them when we shift the 2 neigbours with 
+                    the same disparity di.
+                    It's small when it's they are the same in the 2nd image with shifted positions.
+                    
+                    */
+                    for (int jy = -n; jy < n+1; jy++)
+                    {   
+                    /* 
+                    we check if the neigbour exists otherwise we dont do calculations.
+                    //
+                    also, in order to prevent edges for being created more than once    
+                    we
+                    */
+                    if ( (i+ix) < nx  && (i+ix) >= 0 &&
+                            (j+jy) < ny && (j+jy) >= 0 &&
+                                (ix != 0 && jy != 0) &&
+                                    ( i > i+ix &&  j > j+jy)
+                                )
+                    {
+                        // cout << " VOIS " << endl;   
+                        int index_vois = indexto1d(i+ix, j+jy, d, nx, ny, dmax, dmin);
+
+                        int wd1 = lambda * abs( (I1(x,y) - I1(x+ix,y+jy)) - (I2(x+d,y) - I2(x+ix+d,y+jy)) ) ;
+
+                        G.add_edge(index1,index_vois,wd1,wd1);
+
+                        lambda_pq += wd1;
+                    }
                 
-                G.add_edge(index1,index2,wip,0);                
+                        
+
+
+                    }
+                    
+                }
+                // we compute wip from dmin+1 to dmax-1
+                float wip = rho(zncc(I1,I1M,I2,I2M,x,y,x+d+1,y,n)) + lambda_pq;
+                // cout <<index1 << " "<<index2 <<" " << wip << " *10 " << wip * 10<< endl;
+                wip *= 10;
+                G.add_edge(index1,index2,wip,INF);                
             }
         }
     }
@@ -260,39 +312,28 @@ int main() {
     // For each pixel
     for (int i=0;i<nx;i++) {
         for (int j=0;j<ny;j++) {
-            int disparity = 0;
-            ///// Extract disparity from minimum cut
-            // we check trival solutions
-            int index_min = indexto1d(i, j, dmin, nx, ny, dmax, dmin);
-            int index_max = indexto1d(i, j, dmax-1, nx, ny, dmax, dmin);
-            
-            // cout << endl;
-            // for (size_t dd = 10; dd < dmax; dd++)
-            // {
-            //     int test = indexto1d(i, j, dd, nx, ny, dmax, dmin);
-            //     cout << test % 45 << " " << G.what_segment(test) << " <>>" << endl;
-            // if (G.what_segment(test) == Graph<int,int,int>::SOURCE)
-            // {
-            //     cout << "SOURCE"<<endl;
-            // }
-            // else if (G.what_segment(test) == Graph<int,int,int>::SINK)
-            // {
-            //     cout << "SINK !!"<<endl;
-            // }
-            // }
-
             int d = dmax-1;
             do{
-                index_max = indexto1d(i, j, d, nx, ny, dmax, dmin);
-                // cout << index_max % 45 << " " << G.what_segment(index_max) << endl;
+                index_min = indexto1d(i, j, d, nx, ny, dmax, dmin);
                 d--;
             }
-            while (d > dmin-1 && G.what_segment(index_max) != Graph<int,int,int>::SOURCE);
-            // cout << d+1 << endl;        
+            while (d > dmin-1 && G.what_segment(index_min) != Graph<int,int,int>::SOURCE);
+            cout << d+1 << endl;        
             D(i,j) = d+1;
         }
+        }
     }
-
+    for (size_t i = 0; i < 1000; i++)
+    {
+       if (G.what_segment(i) == Graph<int,int,int>::SINK){
+        // cout << i <<" OK" << endl;
+       }
+       else
+       {
+        //    cout << "NO" << endl;
+       }
+       
+    }
     
 
     cout << "done" << endl;
